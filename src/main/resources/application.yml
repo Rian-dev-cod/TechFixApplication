@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: techfix
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/techfix}
+    username: ${DB_USER:techfix}
+    password: ${DB_PASSWORD:techfix}
+  jpa:
+
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
