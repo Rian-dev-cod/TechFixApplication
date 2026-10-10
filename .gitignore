@@ -1,3 +1,4 @@
+# Build
 target/
 *.class
 *.log
@@ -14,5 +15,11 @@ target/
 .DS_Store
 Thumbs.db
 
-# Variáveis locais
+# Variáveis de ambiente e senhas
 .env
+.env.*
+!.env.example
+
+# Docker
+docker-compose.yml
+docker-compose.override.yml
