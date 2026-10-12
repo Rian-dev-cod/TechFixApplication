@@ -3,11 +3,14 @@ package br.com.techfix.service;
 import br.com.techfix.domain.*;
 import br.com.techfix.dto.OrdemServicoDTO;
 import br.com.techfix.exception.RecursoNaoEncontradoException;
+import br.com.techfix.exception.RegraNegocioExeption;
 import br.com.techfix.repository.OrdemServicoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -86,10 +89,8 @@ class OrdemServicoServiceTest {
         var os = new OrdemServico(equipamento, "Não puxa papel", null);
         when(repository.findById(1L)).thenReturn(Optional.of(os));
 
-        var resposta = service.alterarStatus(1L, StatusOrdemServico.ENTREGUE);
-
-        assertThat(resposta.status()).isEqualTo(StatusOrdemServico.ENTREGUE);
-        assertThat(resposta.dataEntrega()).isNotNull();
+        assertThatThrownBy( () -> service.alterarStatus(1L, StatusOrdemServico.ENTREGUE))
+                .isInstanceOf(RegraNegocioExeption.class);
     }
 
     @Test
@@ -100,5 +101,32 @@ class OrdemServicoServiceTest {
         service.listarAtrasadas();
 
         verify(repository).buscarAtrasadas(HOJE);
+    }
+
+    @ParameterizedTest(name = "{0} -> {1} deve ser permitido")
+    @CsvSource({
+            "RECEBIDO, EM_ANALISE",
+            "EM_ANALISE, AGUARDANDO_APROVACAO",
+            "AGUARDANDO_APROVACAO, EM_CONSERTO",
+            "EM_CONSERTO, PRONTO",
+            "PRONTO, ENTREGUE",
+            "RECEBIDO, CANCELADO",
+            "AGUARDANDO_APROVACAO, CANCELADO"
+
+    })
+    void transicoesPermitidas(StatusOrdemServico atual, StatusOrdemServico novo){
+        assertThat(atual.podeIrPara(novo)).isTrue();
+    }
+
+    @ParameterizedTest(name = "{0} -> {1} deve ser permitido")
+    @CsvSource({
+            "ENTREGUE, RECEBIDO",
+            "CANCELADO, EM_CONSERTO",
+            "RECEBIDO, PRONTO",
+            "EM_CONSERTO, CANCELADO",
+            "PRONTO, EM_CONSERTO"
+    })
+    void transicoesProibidas(StatusOrdemServico atual, StatusOrdemServico novo){
+        assertThat(atual.podeIrPara(novo)).isFalse();
     }
 }

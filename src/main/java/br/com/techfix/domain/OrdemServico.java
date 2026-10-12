@@ -1,6 +1,8 @@
 package br.com.techfix.domain;
 
+import br.com.techfix.exception.RegraNegocioExeption;
 import jakarta.persistence.*;
+import org.springframework.cglib.core.Local;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -61,10 +63,24 @@ public class OrdemServico {
     }
 
     public void alterarStatus(StatusOrdemServico novoStatus) {
-        this.status = novoStatus;
-        if (novoStatus == StatusOrdemServico.ENTREGUE) {
-            this.dataEntrega = LocalDateTime.now();
+        if(!status.podeIrPara(novoStatus)){
+            throw new RegraNegocioExeption(
+                    "Não e permitido muda de " + status + " para " + novoStatus + ". Permitidos: " + status.proximos()
+            );
         }
+
+        if(novoStatus == StatusOrdemServico.AGUARDANDO_APROVACAO && valorOrcamento == null) {
+            throw new RegraNegocioExeption(" Registre o orçamento antes de enviar para  aprovação do cliente");
+
+        }
+
+        this.status = novoStatus;
+
+        if (novoStatus == StatusOrdemServico.ENTREGUE){
+            this.dataEntrada = LocalDateTime.now();
+        }
+
+
     }
 
     public Long getId() { return id; }

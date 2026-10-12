@@ -32,4 +32,15 @@ public class GlobalExceptionHandler {
         problema.setProperty("campos", erros);
         return problema;
     }
+
+
+    @ExceptionHandler(RegraNegocioExeption.class)
+    public ProblemDetail regraNegocio( RegraNegocioExeption ex){
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+        problema.setTitle("Regra de negócio violada");
+
+        return problema;
+
+    }
+
 }
